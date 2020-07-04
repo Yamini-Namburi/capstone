@@ -22,7 +22,7 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                withAwsCli( credentialsId: 'aws-access', defaultRegion: 'us-west-2']) { 
+                withAwsCli([credentialsId: 'aws-access', defaultRegion: 'us-west-2']) { 
                       aws cloudformation create-stack --stack-name capstoneudacity$UUID --template-body file://capstone_infra.yml \
                        --parameters file://capstone_infra_parameter.json --region=eu-west-2
                  }
