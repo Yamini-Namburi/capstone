@@ -23,8 +23,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 withAWS(credentials:'aws-access') {
-                  sh 'aws cloudformation create-stack --stack-name capstoneudacity-yamini --template-body file://capstone_infra.yml \
-                      --capabilities CAPABILITY_NAMED_IAM --parameters file://capstone_infra_parameter.json --region=eu-west-2'
+                  sh 'aws cloudformation create-stack --stack-name test-from-jenkins --template-body file://amazon-eks.yaml --capabilities CAPABILITY_NAMED_IAM'
                 }                
             }
         }
