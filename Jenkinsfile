@@ -1,4 +1,7 @@
 pipeline {
+    environment {
+        USER_CREDENTIALS = credentials('dockerhub')
+    }
 	agent any
 	stages {
 
@@ -10,30 +13,28 @@ pipeline {
 		
 		stage('Build Docker Image') {
 			steps {
-				withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD']]){
 					sh '''
-						docker build -t mehmetincefidan/capstone .
-					'''
-				}
+						docker build -t yamini91/capstone .
+					'''				
 			}
 		}
 
 		stage('Push Image To Dockerhub') {
 			steps {
-				withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD']]){
 					sh '''
-						docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-						docker push mehmetincefidan/capstone
+						docker login --username $USER_CREDENTIALS_USR --password $USER_CREDENTIALS_PSW
+                        docker tag capstone yamini91/capstone:latest
+						docker push yamini91/capstone:latest
 					'''
-				}
 			}
+			
 		}
 
 		stage('Set current kubectl context') {
 			steps {
-				withAWS(region:'us-east-1', credentials:'ecr_credentials') {
+				withAWS(region:'us-west-2', credentials:'aws-access') {
 					sh '''
-						kubectl config use-context arn:aws:eks:us-east-1:142977788479:cluster/capstonecluster
+						kubectl config use-context arn:aws:eks:us-west-2:522489204104:cluster/capstonecluster
 					'''
 				}
 			}
@@ -41,7 +42,7 @@ pipeline {
 
 		stage('Deploy blue container') {
 			steps {
-				withAWS(region:'us-east-1', credentials:'ecr_credentials') {
+				withAWS(region:'us-west-2', credentials:'aws-access') {
 					sh '''
 						kubectl apply -f ./blue-controller.json
 					'''
@@ -51,7 +52,7 @@ pipeline {
 
 		stage('Deploy green container') {
 			steps {
-				withAWS(region:'us-east-1', credentials:'ecr_credentials') {
+				withAWS(region:'us-west-2', credentials:'aws-access') {
 					sh '''
 						kubectl apply -f ./green-controller.json
 					'''
@@ -61,7 +62,7 @@ pipeline {
 
 		stage('Create the service in the cluster, redirect to blue') {
 			steps {
-				withAWS(region:'us-east-1', credentials:'ecr_credentials') {
+				withAWS(region:'us-west-2', credentials:'aws-access') {
 					sh '''
 						kubectl apply -f ./blue-service.json
 					'''
@@ -77,7 +78,7 @@ pipeline {
 
 		stage('Create the service in the cluster, redirect to green') {
 			steps {
-				withAWS(region:'us-east-1', credentials:'ecr_credentials') {
+				withAWS(region:'us-west-2', credentials:'aws-access') {
 					sh '''
 						kubectl apply -f ./green-service.json
 					'''
