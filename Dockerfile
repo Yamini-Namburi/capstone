@@ -1,13 +1,9 @@
-FROM ubuntu:latest
+FROM nginx
 
-WORKDIR /app
+## Step 1:
+RUN rm /usr/share/nginx/html/index.html
 
-RUN apt-get update -y &&\
-    apt-get install -y tzdata &&\
-    apt-get install apache2 -y
-    
-COPY . index.html /var/www/html/
+## Step 2:
+# Copy source code to working directory
+COPY index.html /usr/share/nginx/html
 
-EXPOSE 80
-
-CMD ["apachectl", "-D", "FOREGROUND"]
